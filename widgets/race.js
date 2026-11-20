@@ -5,7 +5,7 @@ import { makeCanvas, drawBoard, startState, allUndecided, isMirror } from '../sr
 import { solve } from '../src/solver.js';
 
 const fmt = (n) => n.toLocaleString('en-US');
-const ms = (x) => (x < 1 ? `${x.toFixed(2)} ms` : `${x.toFixed(1)} ms`);
+const ms = (x) => (x < 0.1 ? "under 0.1 ms" : x < 1 ? `${x.toFixed(2)} ms` : `${x.toFixed(1)} ms`); // browsers round timers to ~0.1 ms
 
 export function mount(el, opts = {}) {
   const name = opts.board || 'big';

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test: brute force</title>
+<style>
+  body { font: 18px/1.55 system-ui, sans-serif; color: #1d2330; background: #fbfaf7; max-width: 680px; margin: 40px auto; padding: 0 16px; }
+  .widget { background: #12161f; border-radius: 12px; padding: 14px; color: #d8dee9; }
+  canvas.board { width: 100%; aspect-ratio: 1; display: block; touch-action: manipulation; }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+  .controls label { display: flex; gap: 8px; align-items: center; flex: 1; min-width: 200px; }
+  button { font: inherit; font-size: 15px; background: #222a38; color: #d8dee9; border: 1px solid #3a4558; border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+  button:disabled { opacity: 0.5; cursor: default; }
+  .readout { margin: 10px 2px 0; min-height: 2.4em; font-size: 16px; }
+  .num { font-variant-numeric: tabular-nums; }
+  .note { font-size: 14px; color: #8b93a1; margin: 4px 2px 0; }
+</style>
+</head>
+<body>
+<div class="widget" id="w"></div>
+<script type="module">
+import { mount } from './brute.js';
+mount(document.getElementById('w'));
+</script>
+</body>
+</html>

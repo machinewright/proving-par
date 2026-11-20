@@ -1,6 +1,6 @@
 # "How do you know 7 is the best?": essay outline
 
-Status: proposal, waiting for the owner's OK (notes/for-owner.md, 2026-11-20). Nothing is published.
+Status: first full draft in index.html (2026-11-20). Idea granted by the owner; not published until the owner has read it.
 
 **Reader:** curious, comfortable with "a computer tries things", no algorithms course needed.
 **Promise:** by the end you can prove a puzzle's minimum yourself, and you know why "try everything"

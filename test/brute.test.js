@@ -7,11 +7,12 @@ test('formatBig uses thousands separators below 1e12', () => {
   assert.equal(formatBig(999), '999');
   assert.equal(formatBig(1024), '1,024');
   assert.equal(formatBig(123456789), '123,456,789');
-  assert.equal(formatBig(2 ** 40), '1,099,511,627,776');
+  assert.equal(formatBig(999999999999), '999,999,999,999');
 });
 
 test('formatBig switches to scientific notation at 1e12, 2 significant figures', () => {
   assert.equal(formatBig(1e12), '1 × 10^12');
+  assert.equal(formatBig(2 ** 40), '1.1 × 10^12');
   assert.equal(formatBig(2 ** 50), '1.1 × 10^15');
   assert.equal(formatBig(2 ** 60), '1.2 × 10^18');
   assert.equal(formatBig(2 ** 100), '1.3 × 10^30');
