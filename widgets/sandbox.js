@@ -28,7 +28,8 @@ export function mount(el) {
   const canvas = document.createElement('canvas'); canvas.className = 'board big'; canvas.tabIndex = 0;
   canvas.style.cursor = 'pointer';
   canvas.setAttribute('role', 'application');
-  canvas.setAttribute('aria-label', 'Board editor. Arrow keys move the cursor, Enter or Space applies the selected tool.');
+  const LABEL = 'Board editor. Arrow keys move the cursor, Enter or Space applies the selected tool.';
+  canvas.setAttribute('aria-label', LABEL);
   const tools = document.createElement('div'); tools.className = 'controls'; tools.setAttribute('role', 'group'); tools.setAttribute('aria-label', 'Tool');
   const toolButtons = TOOLS.map(([k, label]) => {
     const b = button(label, () => { tool = k; toolButtons.forEach((x) => x.setAttribute('aria-pressed', String(x === b))); });
@@ -61,6 +62,11 @@ export function mount(el) {
     readout.textContent = 'Press Solve to find the fewest flips and see how much searching it took.';
     draw();
   }
+  const DIRS = ['up', 'right', 'down', 'left'];
+  const what = (c) => (c.type === MIRROR ? `mirror ${c.rot ? '\\' : '/'}` : c.type === EMITTER ? `light pointing ${DIRS[c.dir]}`
+    : c.type === EMPTY ? 'empty' : c.type);
+  // keyboard users hear where the cursor is and what is there (the board itself is only drawn)
+  const announce = () => canvas.setAttribute('aria-label', `Column ${cursor % g.w + 1}, row ${Math.floor(cursor / g.w) + 1}: ${what(g.cells[cursor])}${warn ? `. ${warn}` : ''}`);
   function apply(i) {
     const c = g.cells[i];
     if (tool === 'erase') { g.cells[i] = { type: EMPTY }; }
@@ -125,14 +131,14 @@ export function mount(el) {
   });
   canvas.addEventListener('keydown', (e) => {
     const mv = { ArrowRight: [1, 0], ArrowLeft: [-1, 0], ArrowDown: [0, 1], ArrowUp: [0, -1] }[e.key];
-    if (cursor < 0 && (mv || e.key === 'Enter' || e.key === ' ')) { cursor = 0; e.preventDefault(); draw(); return; }
+    if (cursor < 0 && (mv || e.key === 'Enter' || e.key === ' ')) { cursor = 0; e.preventDefault(); draw(); announce(); return; }
     if (mv) {
       e.preventDefault();
       const x = Math.min(g.w - 1, Math.max(0, cursor % g.w + mv[0])), y = Math.min(g.h - 1, Math.max(0, Math.floor(cursor / g.w) + mv[1]));
-      cursor = y * g.w + x; draw();
-    } else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); apply(cursor); }
+      cursor = y * g.w + x; draw(); announce();
+    } else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); apply(cursor); announce(); }
   });
-  canvas.addEventListener('blur', () => { cursor = -1; draw(); });
+  canvas.addEventListener('blur', () => { cursor = -1; draw(); canvas.setAttribute('aria-label', LABEL); });
   edited();
   return {};
 }
