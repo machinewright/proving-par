@@ -27,7 +27,14 @@ export function drawBoard(canvas, g, decided, { focus = -1, fadeUnreached = true
   for (let i = 1; i < g.w; i++) { ctx.beginPath(); ctx.moveTo(i * cell, 0); ctx.lineTo(i * cell, g.h * cell); ctx.stroke(); }
   for (let i = 1; i < g.h; i++) { ctx.beginPath(); ctx.moveTo(0, i * cell); ctx.lineTo(W, i * cell); ctx.stroke(); }
   ctx.lineCap = 'round';
-  const line = (s) => { ctx.beginPath(); ctx.moveTo(cx(s.x1), cy(s.y1)); ctx.lineTo(cx(s.x2), cy(s.y2)); ctx.stroke(); };
+  // Dashes are anchored to the board, not the segment: two ghost beams running opposite ways along the same line must
+  // overlap dash on dash, or their gaps fill each other in and the pair looks like solid (certain) light.
+  const line = (s) => {
+    let { x1, y1, x2, y2 } = s;
+    if (x2 < x1 || y2 < y1) [x1, y1, x2, y2] = [x2, y2, x1, y1];
+    ctx.lineDashOffset = x1 === x2 ? cy(y1) : cx(x1);
+    ctx.beginPath(); ctx.moveTo(cx(x1), cy(y1)); ctx.lineTo(cx(x2), cy(y2)); ctx.stroke();
+  };
   ctx.strokeStyle = COLORS.ghost; ctx.lineWidth = Math.max(1.5, cell * 0.04); ctx.setLineDash([cell * 0.09, cell * 0.09]);
   if (ghosts) t.segments.filter((s) => s.ghost).forEach(line);
   ctx.setLineDash([]);
