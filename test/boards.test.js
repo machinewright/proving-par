@@ -21,3 +21,13 @@ test('solver gives the same par with ghost pruning off, using more nodes', () =>
     assert.ok(off.nodes > on.nodes, name);
   }
 });
+
+test('ghost pruning never changes the answer (60 generated boards)', async () => {
+  const { generate } = await import('../src/generator.js');
+  for (let seed = 1; seed <= 60; seed++) {
+    const g = generate(seed, 2 + (seed % 20)).puzzle;
+    const on = solve(g, { maxNodes: 1e6 }), off = solve(g, { maxNodes: 1e6, ghost: false });
+    if (off.exhausted) continue;
+    assert.equal(on.moves, off.moves, `seed ${seed}`);
+  }
+});

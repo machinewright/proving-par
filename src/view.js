@@ -15,10 +15,13 @@ export const allUndecided = (g) => new Int8Array(g.cells.length).fill(UNDECIDED)
 export const flipCount = (g, d) => g.cells.reduce((n, c, i) => n + (isMirror(c) && d[i] !== UNDECIDED && d[i] !== c.rot ? 1 : 0), 0);
 
 // Returns the trace so callers can describe the state in text.
-export function drawBoard(canvas, g, decided, { focus = -1, fadeUnreached = true, faint = null } = {}) {
+export function drawBoard(canvas, g, decided, { focus = -1, fadeUnreached = true, ghosts = true } = {}) {
+  // ghosts=false: show only certain light; undecided mirrors are drawn faintly in their starting tilt.
   const ctx = canvas.getContext('2d');
   const W = canvas.width, cell = W / g.w, cx = (x) => (x + 0.5) * cell, cy = (y) => (y + 0.5) * cell;
   const t = traceGhost(g, decided);
+  // with every mirror decided there's no "might": an unlit target is just unlit, not ruled out
+  if (!g.cells.some((c, i) => isMirror(c) && decided[i] === UNDECIDED)) ghosts = false;
   ctx.fillStyle = COLORS.bg; ctx.fillRect(0, 0, W, canvas.height);
   ctx.strokeStyle = COLORS.grid; ctx.lineWidth = Math.max(1, cell * 0.012);
   for (let i = 1; i < g.w; i++) { ctx.beginPath(); ctx.moveTo(i * cell, 0); ctx.lineTo(i * cell, g.h * cell); ctx.stroke(); }
@@ -26,7 +29,7 @@ export function drawBoard(canvas, g, decided, { focus = -1, fadeUnreached = true
   ctx.lineCap = 'round';
   const line = (s) => { ctx.beginPath(); ctx.moveTo(cx(s.x1), cy(s.y1)); ctx.lineTo(cx(s.x2), cy(s.y2)); ctx.stroke(); };
   ctx.strokeStyle = COLORS.ghost; ctx.lineWidth = Math.max(1.5, cell * 0.04); ctx.setLineDash([cell * 0.09, cell * 0.09]);
-  t.segments.filter((s) => s.ghost).forEach(line);
+  if (ghosts) t.segments.filter((s) => s.ghost).forEach(line);
   ctx.setLineDash([]);
   for (const [w, a] of [[0.26, 0.12], [0.13, 0.25], [0.055, 1]]) {
     ctx.globalAlpha = a; ctx.lineWidth = Math.max(1.5, cell * w); ctx.strokeStyle = COLORS.beam;
@@ -43,9 +46,9 @@ export function drawBoard(canvas, g, decided, { focus = -1, fadeUnreached = true
       ctx.lineTo(px + DX[(d + 3) % 4] * r * 0.8 - DX[d] * r * 0.6, py + DY[(d + 3) % 4] * r * 0.8 - DY[d] * r * 0.6);
       ctx.closePath(); ctx.fill();
     } else if (c.type === TARGET) {
-      const real = t.litReal.has(i), maybe = t.lit.has(i);
+      const real = t.litReal.has(i), maybe = ghosts ? t.lit.has(i) : true;
       ctx.lineWidth = cell * 0.08;
-      ctx.strokeStyle = real ? COLORS.lit : maybe ? COLORS.beam : COLORS.dead;
+      ctx.strokeStyle = real ? COLORS.lit : !ghosts ? COLORS.undecided : maybe ? COLORS.beam : COLORS.dead;
       ctx.setLineDash(real ? [] : [cell * 0.09, cell * 0.07]);
       ctx.beginPath(); ctx.arc(px, py, r * 0.7, 0, 7); ctx.stroke(); ctx.setLineDash([]);
       if (real) { ctx.fillStyle = COLORS.lit; ctx.beginPath(); ctx.arc(px, py, r * 0.32, 0, 7); ctx.fill(); }
@@ -60,7 +63,7 @@ export function drawBoard(canvas, g, decided, { focus = -1, fadeUnreached = true
         ctx.beginPath(); ctx.moveTo(px - r, py - s * r); ctx.lineTo(px + r, py + s * r); ctx.stroke(); ctx.globalAlpha = 1;
       };
       const far = fadeUnreached && !t.reached.has(i) ? 0.3 : 1;
-      if (faint && faint.has(i)) { ctx.strokeStyle = COLORS.undecided; stroke(c.rot, 0.3, cell * 0.06); }
+      if (d === UNDECIDED && !ghosts) { ctx.strokeStyle = COLORS.undecided; stroke(c.rot, 0.45, cell * 0.06); }
       else if (d === UNDECIDED) { ctx.strokeStyle = COLORS.undecided; stroke(0, 0.6 * far, cell * 0.05); stroke(1, 0.6 * far, cell * 0.05); }
       else {
         const flipped = d !== c.rot;
