@@ -13,6 +13,13 @@ test('searchTree finds the same optimum as solve(), in every mode', () => {
       const r = searchTree(g, mode);
       assert.equal(r.best.cost, par, `seed ${seed} ${JSON.stringify(mode)}`);
     }
+    // the tree widgets run without branch-and-bound tightening: the best solution found must still be par
+    for (const ghost of [false, true]) {
+      const all = searchTree(g, { ghost });
+      const sols = [];
+      (function walk(n) { if (n.outcome === 'solved') sols.push(n.flips.length); (n.children || []).forEach(walk); })(all.root);
+      assert.equal(Math.min(...sols), par, `seed ${seed} ghost ${ghost}: full tree`);
+    }
     for (const ghost of [false, true]) {
       assert.equal(searchTree(g, { budget: par - 1, ghost }).best, null, `seed ${seed}: par-1 must be impossible`);
       assert.equal(searchTree(g, { budget: par, ghost }).best?.cost, par);

@@ -1,6 +1,6 @@
 // §7 and §8: the real solver, with and without ghost pruning, on a bigger board. Both counters advance at
 // the same speed, one position per tick, so the bars show how much work each version does.
-import { board, BOARDS } from '../src/boards.js';
+import { board } from '../src/boards.js';
 import { makeCanvas, drawBoard, startState, allUndecided, isMirror } from '../src/view.js';
 import { solve } from '../src/solver.js';
 
@@ -9,7 +9,7 @@ const ms = (x) => (x < 0.1 ? "under 0.1 ms" : x < 1 ? `${x.toFixed(2)} ms` : `${
 
 export function mount(el, opts = {}) {
   const name = opts.board || 'big';
-  const g = board(name), par = BOARDS[name].par;
+  const g = board(name);
   const mirrors = g.cells.filter(isMirror).length;
   const showGhostStart = opts.view === 'ghost';
   let state = showGhostStart ? allUndecided(g) : startState(g);
@@ -26,8 +26,8 @@ export function mount(el, opts = {}) {
   view.setDraw(() => drawBoard(view.canvas, g, state, { fadeUnreached: false }));
   const bars = document.createElement('div');
   bars.innerHTML = `
-    <div class="race-row"><div class="race-label">Without ghost beams</div><div class="race-track"><div class="race-bar" style="background:#8b93a1"></div></div><div class="race-n num">0</div></div>
-    <div class="race-row"><div class="race-label">With ghost beams</div><div class="race-track"><div class="race-bar" style="background:#ffd166"></div></div><div class="race-n num">0</div></div>`;
+    <div class="race-row"><div class="race-label">Without ghost light</div><div class="race-track"><div class="race-bar" style="background:#8b93a1"></div></div><div class="race-n num">0</div></div>
+    <div class="race-row"><div class="race-label">With ghost light</div><div class="race-track"><div class="race-bar" style="background:#ffd166"></div></div><div class="race-n num">0</div></div>`;
   const [barA, barB] = bars.querySelectorAll('.race-bar'), [nA, nB] = bars.querySelectorAll('.race-n');
   const controls = document.createElement('div'); controls.className = 'controls';
   const raceB = button('Race', race);
@@ -69,8 +69,9 @@ export function mount(el, opts = {}) {
     for (const i of ghost.flips) state[i] ^= 1;
     view.redraw();
     const ratio = plain.nodes / ghost.nodes;
-    readout.innerHTML = `Both prove the same answer: <span class="num">${par}</span> flips (the blue mirrors). `
-      + `Without ghost beams the solver looks at <span class="num">${fmt(plain.nodes)}</span> positions; with them, <span class="num">${fmt(ghost.nodes)}</span>`
+    readout.innerHTML = (plain.moves === ghost.moves ? `Both prove the same answer: <span class="num">${ghost.moves}</span> flips (the blue mirrors). `
+      : `<span class="bad">The two searches disagree (${plain.moves} vs ${ghost.moves}). That's a bug.</span> `)
+      + `Without ghost light the solver looks at <span class="num">${fmt(plain.nodes)}</span> positions; with it, <span class="num">${fmt(ghost.nodes)}</span>`
       + (ratio >= 3 ? `, about ${fmt(Math.round(ratio))} times fewer.` : `. That's only ${ratio.toFixed(1)} times fewer.`)
       + ` <span class="note">Time on this device: ${ms(plain.ms)} without, ${ms(ghost.ms)} with. A position with ghost pruning costs more to check, since the light is traced twice.</span>`;
   }

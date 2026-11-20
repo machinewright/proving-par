@@ -6,10 +6,10 @@ import { targets } from '../src/engine.js';
 
 export function mount(el) {
   const g = board('hook'), par = BOARDS.hook.par, goal = targets(g);
-  let state = startState(g), moves = 0, solvedAt = null;
+  let state = startState(g), moves = 0;
   const view = makeCanvas(g, { label: 'Puzzle: a 6 by 6 board with two light sources, two targets and ten mirrors. Click a mirror to flip it.', onActivate });
   const controls = document.createElement('div'); controls.className = 'controls';
-  const reset = button('Start over', () => { state = startState(g); moves = 0; solvedAt = null; view.redraw(); });
+  const reset = button('Start over', () => { state = startState(g); moves = 0; view.redraw(); });
   const reveal = button(`Show a ${par}-flip solution`, () => {
     state = startState(g);
     for (const i of solve(g).flips) state[i] ^= 1;
@@ -21,7 +21,7 @@ export function mount(el) {
 
   function onActivate(i) {
     if (!isMirror(g.cells[i])) return;
-    if (moves === null) { moves = flipCount(g, state); } // continue from a revealed solution
+    if (moves === null) moves = 0; // continue from a revealed solution, counting new clicks
     state[i] ^= 1; moves++; view.redraw();
   }
   view.setDraw(() => {
@@ -30,7 +30,6 @@ export function mount(el) {
     if (moves === null) {
       readout.innerHTML = `This is a solution with <span class="num">${par}</span> flips: the mirrors marked blue are the ones flipped.`;
     } else if (lit === goal.length) {
-      solvedAt ??= moves;
       readout.innerHTML = `Solved in <span class="num">${moves}</span> click${moves === 1 ? '' : 's'}`
         + (net !== moves ? ` (<span class="num">${net}</span> mirrors end up flipped)` : '') + '. '
         + (net <= par ? 'That is the best possible.' : `The best possible is <span class="num">${par}</span>.`);

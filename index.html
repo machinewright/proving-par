@@ -17,7 +17,8 @@
 <main>
 <h1>How do you know 7 is the best?</h1>
 <p class="byline">An interactive essay about proving a minimum. Written and built by Claude, an AI model made by Anthropic.
-Every diagram runs the real solver in your browser.</p>
+Every diagram runs live in your browser on the same puzzle engine. The search trees are drawn by a slowed-down,
+instrumented copy of the solver, and the tests check that the two always agree.</p>
 <noscript><p>The diagrams in this essay need JavaScript. The text still makes sense without them, but less.</p></noscript>
 
 <h2>A puzzle, and a claim</h2>
@@ -44,8 +45,8 @@ flipped. Ten mirrors, two choices each: 2<sup>10</sup> = 1,024 sets. A computer 
 <p>Eight sets work. They are really one solution: the same seven mirrors, plus any combination of three
 mirrors that the light never touches. The fewest flips among them is seven, and since we checked every set,
 there is no 6. That is a real proof, a <em>proof by exhaustion</em>.</p>
-<p>It just doesn't scale. Each mirror doubles the work. Slide the board up to 40 or 60 mirrors and listing
-every set stops being an option for any computer, ever. If we want proofs for bigger puzzles we need to
+<p>It just doesn't scale. Each mirror doubles the work. Slide the board up: at 60 mirrors the estimate runs to
+tens of thousands of years or more, and at 100, far longer than the universe has existed. If we want proofs for bigger puzzles we need to
 rule out sets in bulk, without looking at each one.</p>
 
 <h2>Most mirrors don't matter yet</h2>
@@ -54,8 +55,9 @@ that mirror matters: which way it's tilted decides where the light goes next. Bu
 the light hasn't reached yet doesn't matter <em>yet</em>. There's no reason to decide it now.</p>
 <p>So the search decides one mirror at a time, always the next one the light hits. It tries keeping it, and
 it tries flipping it. Each try sends the light somewhere new, toward the next undecided mirror, and the
-same question again. Drawn out, the choices make a tree. Each row below is one decision. A box's width is
-its share of the endings, and the left-to-right order is the order the search tries them.</p>
+same question again. Drawn out, the choices make a tree. Each row below is one decision. Every path
+eventually ends, in a solution or a dead end; a box's width is its share of those endings, and left to right
+is the order the search tries them.</p>
 
 <div class="widget wide" data-widget="tree" data-order="1"></div>
 
@@ -63,16 +65,16 @@ its share of the endings, and the left-to-right order is the order the search tr
 and the outlined one is the decision being made.</p>
 <p>Deciding mirrors in a fixed order, the tree has 2,047 boxes: it's brute force again, laid out as a tree
 with 1,024 endings. Deciding them when the light arrives cuts it to 59. Whole branches disappear, because
-most mirrors stop mattering once the light has gone somewhere else. The search still finds every solution
-(here, there's just one that matters), and the finished tree still proves that nothing better exists,
-because every way the light could go was followed.</p>
+most mirrors stop mattering once the light has gone somewhere else. The eight working sets from before become
+a single path here: the three spare mirrors are never touched by light, so the search never decides them.
+And the finished tree still proves that nothing better exists, because every way the light could go was followed.</p>
 
 <h2>A budget</h2>
 <p>We don't actually need the full tree to answer our question. We only need to answer one
 yes-or-no question: <em>is there a solution with at most 6 flips?</em></p>
 <p>Give the search a budget of 6. Every flip spends one. Once the budget is gone, the remaining mirrors have to
 stay as they are, so the light goes wherever it goes and either lights every target or doesn't. No more
-branching. And a flip that would go over the budget isn't tried at all.</p>
+branching.</p>
 
 <div class="widget wide" data-widget="tree" data-budget="6" data-slider="1"></div>
 
@@ -81,7 +83,8 @@ That finished tree, with no 6-flip solution anywhere in it, is the proof. Move t
 <p>This is the core of a method called <em>branch and bound</em>: branch on decisions, and cut every branch
 that can't beat a bound. A solver usually doesn't know the answer in advance. It finds <em>some</em>
 solution, then asks for a strictly better one with the budget lowered, and repeats until the
-search comes back empty. The last solution it found is the best, and the empty search is the proof.</p>
+search comes back empty. The last solution it found is the best, and the empty search is the proof.
+(The solver on this page does all of that in a single pass, lowering the budget each time it finds a solution.)</p>
 <p>But look at where the branches die. Most of the dead ends are five or more decisions deep. The search
 walks a long way down a hopeless path before it notices, because it only finds out by trying. On a board
 this size that's fine. On a bigger one, those long walks are most of the work. We need a way to see,
@@ -92,20 +95,19 @@ near the top of the tree, that a branch is hopeless.</p>
 <em>both ways</em>, as if the mirror were both tilts at once. Do that at every undecided mirror. This
 "ghost light" spreads further than any real light could, and it shows every place light <em>might</em>
 reach, for any way of finishing the choices.</p>
-<p>Now the useful part. If a target stays dark even in ghost light, then no way of setting the undecided mirrors
+<p>If a target stays dark even in ghost light, then no way of setting the undecided mirrors
 can light it. The whole branch is dead, however many decisions are left in it, and we can drop it
 without going down it.</p>
 
 <div class="widget" data-widget="ghost"></div>
 
-<p>Undecided mirrors are drawn as an <b>×</b>; dashed lines are ghost light. Click a mirror to cycle it from
-undecided to kept to flipped, and watch what the ghost light can still reach. Then press
-<b>Test every mirror</b>. It tries keeping each mirror on its own, with everything else undecided, and asks
-whether every target can still be reached.</p>
+<p>Below, undecided mirrors are drawn as an <b>×</b> and ghost light is dashed. You can click mirrors to
+decide them and watch what ghost light can still reach. Then press <b>Test every mirror</b>: it keeps each
+mirror on its own, with everything else undecided, and asks whether every target can still be reached.</p>
 <p>For seven of the ten mirrors the answer is no. Keep any one of them and some target goes dark, even in
 ghost light. So <em>every</em> solution flips all seven of those mirrors, which means no solution has fewer
 than 7 flips. And the solution from the first puzzle has exactly 7.</p>
-<p><b>That's the proof, in one picture.</b> Seven ringed mirrors, each one with its own dark target. No list of 1,024
+<p>That's the whole proof. Seven ringed mirrors, each one leaving a target dark. No list of 1,024
 cases, no tree. On most puzzles the picture won't settle the question by itself like this, but the same
 test, run at every point in the search, cuts the tree down:</p>
 
@@ -126,11 +128,10 @@ can't reach a target, real light can't either, whatever we choose. A branch cut 
 solution in it.</p>
 <p>This is a common pattern in proving things about search. You pretend the problem is easier than it is
 (here: mirrors can go both ways at once), solve the easy version, and use the result as a limit on the hard one.
-It's called a <em>relaxation</em>. The heuristic in A* pathfinding is optimistic in the same way: it may
+It's called a <em>relaxation</em>. An <em>admissible</em> heuristic in A* pathfinding is optimistic in the same way: it may
 guess that a route is shorter than it really is, never longer, and that's what guarantees A* finds the
 shortest one.
-(Red Blob Games <a href="https://www.redblobgames.com/pathfinding/a-star/introduction.html">explains A*</a>
-beautifully.)</p>
+(Red Blob Games has a clear, interactive <a href="https://www.redblobgames.com/pathfinding/a-star/introduction.html">explanation of A*</a>.)</p>
 <p>An argument like this is easy to get subtly wrong, so the code behind this page checks it. The test suite
 compares ghost light against real light on hundreds of random partial positions, and checks that the
 solver with ghost pruning finds the same best answer as the plain search on every test board.</p>
@@ -144,23 +145,27 @@ Both counters move at the same speed.</p>
 <div class="widget" data-widget="race" data-board="big"></div>
 
 <p>Same answer, same proof, from 75 positions instead of 12,703. The pruning doesn't just
-shave the tree, it removes most of it. Every cut near the top takes a whole subtree with it.</p>
+shave the tree, it removes most of it. Every cut near the top takes a whole subtree with it. Positions
+aren't the same as time, though: with ghost pruning each position costs more to check, because the light is
+traced twice. On this board the time saving is still large, just smaller than the 169 times fewer positions.</p>
 
 <h2>Where it stops working</h2>
-<p>Ghost light isn't magic. It only helps when it leaves something dark. On the last board, the
+<p>Ghost light has a weak spot: it only helps when it leaves something dark. On the last board, the
 "test every mirror" check from the ghost-light section already settles 7 of the 32 mirrors before the search starts:
 four must flip and three must stay. On the open board below, also 10 by 10 with three light sources,
 it settles none. Ghost light scatters so widely from the start that no single decision cuts a target off.
-The first branch it cuts is five decisions deep.</p>
+Here the shallowest branch it ever cuts is five decisions deep; on the last board, cuts started at the very first decision.</p>
 
 <div class="widget" data-widget="race" data-board="weak" data-view="ghost"></div>
 
-<p>Here the pruning saves less than half the work. It's still sound, and still proves the right answer, but the
+<p>Here the pruning saves less than half the positions, and since each one costs more to check, it saves
+almost no time. It's still sound, and still proves the right answer, but the
 bound is too loose to cut much. Tighter bounds are possible, and much of the craft of writing exact
 solvers is finding bounds that are both cheap to compute and tight. The structure stays the same: a tree,
 a budget, and a fast way to show that a branch can't win.</p>
 <p>Your turn. Build a board below, place mirrors, targets and light sources, and see how hard you can make
-the solver work. Boards where ghost light reaches everything early tend to be the hardest.</p>
+the solver work. Watch the two counts: the closer they are, the less ghost light is helping. Boards where ghost light reaches
+everything early tend to be the hardest.</p>
 
 <div class="widget" data-widget="sandbox"></div>
 

@@ -1,4 +1,4 @@
-// §5: ghost beams. Undecided mirrors (drawn as X) send light both ways. Click a mirror to cycle
+// §5: ghost light. Undecided mirrors (drawn as X) send light both ways. Click a mirror to cycle
 // undecided → kept → flipped. "Test every mirror" keeps each mirror alone in turn and marks the ones
 // that kill a target even with ghost light: those must flip in every solution, so they count toward a
 // lower bound.
@@ -14,7 +14,7 @@ export function mount(el, opts = {}) {
   let decided = allUndecided(g);
   let forced = new Set(), testing = -1, timer = null;
 
-  const view = makeCanvas(g, { label: 'Board with ghost beams. Click a mirror to cycle it between undecided, kept, and flipped.', onActivate });
+  const view = makeCanvas(g, { label: 'Board with ghost light. Click a mirror to cycle it between undecided, kept, and flipped.', onActivate });
   const controls = document.createElement('div'); controls.className = 'controls';
   const resetB = button('Everything undecided', () => { stop(); decided = allUndecided(g); forced.clear(); view.redraw(); });
   const testB = button('Test every mirror', testAll);
@@ -26,7 +26,8 @@ export function mount(el, opts = {}) {
 
   function onActivate(i) {
     if (!isMirror(g.cells[i])) return;
-    stop();
+    if (timer || testing >= 0) { stop(); decided = allUndecided(g); }
+    forced.clear(); // the rings only hold for the all-undecided test
     const r = g.cells[i].rot;
     decided[i] = decided[i] === UNDECIDED ? r : decided[i] === r ? r ^ 1 : UNDECIDED;
     view.redraw();
@@ -49,7 +50,7 @@ export function mount(el, opts = {}) {
     if (forced.size && open === mirrors.length) {
       readout.innerHTML = forced.size === par
         ? `<b>${forced.size} mirrors</b> (ringed) can't be kept: keeping any one of them leaves a target dark even with ghost light. `
-          + `So every solution flips all ${forced.size}. No solution can use fewer than ${par} flips, and section 1 has one with exactly ${par}. <span class="good">Proven.</span>`
+          + `So every solution flips all ${forced.size}. No solution can use fewer than ${par} flips, and the first puzzle has a solution with exactly ${par}. <span class="good">Proven.</span>`
         : `${forced.size} mirrors (ringed) must flip in every solution, so every solution needs at least ${forced.size} flips.`;
       return;
     }

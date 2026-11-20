@@ -9,7 +9,7 @@ import { UNDECIDED } from '../src/ghost.js';
 
 const FILL = {
   keep: '#2c3647', flip: '#28476a', root: '#3a4558',
-  solved: '#3fa86b', fail: '#7a3a3f', over: '#9a6420', skip: '#1b2029', ghost: '#7a6a2a',
+  solved: '#3fa86b', fail: '#7a3a3f', over: '#9a6420', skip: '#1b2029', ghost: '#7a6a2a', cut: '#444',
 };
 const LEGEND = [
   ['keep', 'keep a mirror'], ['flip', 'flip a mirror'], ['solved', 'solution'], ['fail', 'dead end'],
