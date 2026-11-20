@@ -9,7 +9,7 @@ import { UNDECIDED } from '../src/ghost.js';
 
 const FILL = {
   keep: '#2c3647', flip: '#28476a', root: '#3a4558',
-  solved: '#3fa86b', fail: '#7a3a3f', over: '#9a6420', skip: '#1b2029', ghost: '#7a6a2a', cut: '#444',
+  solved: '#2a7a4e', fail: '#7a3a3f', over: '#7a4d12', skip: '#1b2029', ghost: '#5f5216', cut: '#444',
 };
 const LEGEND = [
   ['keep', 'keep a mirror'], ['flip', 'flip a mirror'], ['solved', 'solution'], ['fail', 'dead end'],
@@ -74,7 +74,7 @@ export function mount(el, opts = {}) {
     if (sliderOut) sliderOut.textContent = `${budget} flip${budget === 1 ? '' : 's'}`;
     const used = new Set(nodes.map((n) => (n.children ? n.choice : n.outcome)));
     legend.innerHTML = LEGEND.filter(([k]) => used.has(k) || (k === 'over' && used.has('skip')))
-      .map(([k, t]) => `<span><i style="background:${FILL[k]}"></i>${t}</span>`).join('');
+      .map(([k, t]) => `<span><i aria-hidden="true" style="background:${FILL[k]}"></i>${t}</span>`).join('');
     writeSummary();
     select(nodes[0]);
   }

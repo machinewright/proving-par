@@ -14,14 +14,14 @@ export function mount(el, opts = {}) {
   let decided = allUndecided(g);
   let forced = new Set(), testing = -1, timer = null;
 
-  const view = makeCanvas(g, { label: 'Board with ghost light. Click a mirror to cycle it between undecided, kept, and flipped.', onActivate });
+  const view = makeCanvas(g, { label: 'Board with ghost light. Click a mirror to cycle it between undecided, kept, and flipped. Arrow keys move between mirrors; Enter cycles one.', onActivate });
   const controls = document.createElement('div'); controls.className = 'controls';
   const resetB = button('Everything undecided', () => { stop(); decided = allUndecided(g); forced.clear(); view.redraw(); });
   const testB = button('Test every mirror', testAll); testB.classList.add('primary');
   controls.append(resetB, testB);
   const readout = document.createElement('p'); readout.className = 'readout';
   readout.setAttribute('role', 'status'); readout.setAttribute('aria-live', 'polite');
-  const count = document.createElement('p'); count.className = 'note';
+  const count = document.createElement('p'); count.className = 'note'; count.setAttribute('role', 'status');
   el.append(view.canvas, controls, readout, count);
 
   function onActivate(i) {

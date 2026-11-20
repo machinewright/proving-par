@@ -105,11 +105,16 @@ function roundRect(ctx, x, y, w, h, r) {
 
 // A responsive, crisp canvas for a board, with click/tap and keyboard cursor support.
 // onActivate(i) is called with the cell index when a cell is clicked or Enter/Space is pressed.
-export function makeCanvas(g, { label, onActivate } = {}) {
+// describe(i), if given, names the cell under the keyboard cursor; it becomes the canvas's accessible name while the
+// cursor is on the board, so screen readers say where the cursor is.
+export function makeCanvas(g, { label, onActivate, describe } = {}) {
   const canvas = document.createElement('canvas');
   canvas.className = 'board';
-  canvas.setAttribute('role', 'img');
+  canvas.setAttribute('role', onActivate ? 'application' : 'img');
+  if (onActivate) canvas.setAttribute('aria-roledescription', 'board');
   if (label) canvas.setAttribute('aria-label', label);
+  const where = (i) => `Mirror at column ${i % g.w + 1}, row ${Math.floor(i / g.w) + 1}`;
+  const announce = () => canvas.setAttribute('aria-label', (describe || where)(cursor));
   let redraw = () => {};
   let cursor = -1;
   const fit = () => {
@@ -142,10 +147,10 @@ export function makeCanvas(g, { label, onActivate } = {}) {
           const along = dx * move[0] + dy * move[1], across = Math.abs(dx * move[1] + dy * move[0]);
           if (along > 0 && along + 2 * across < bestD) { bestD = along + 2 * across; bestI = m; }
         }
-        cursor = bestI; redraw();
-      } else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onActivate(cursor); }
+        cursor = bestI; redraw(); announce();
+      } else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onActivate(cursor); announce(); }
     });
-    canvas.addEventListener('blur', () => { cursor = -1; redraw(); });
+    canvas.addEventListener('blur', () => { cursor = -1; redraw(); if (label) canvas.setAttribute('aria-label', label); });
   }
   return {
     canvas,

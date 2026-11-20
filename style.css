@@ -29,7 +29,7 @@ em.claim { font-style: normal; background: linear-gradient(transparent 55%, #fbe
 @media (min-width: 960px) { .widget.wide { margin-left: -120px; margin-right: -120px; } }
 .widget canvas.board { width: 100%; display: block; touch-action: manipulation; border-radius: 10px; max-width: 380px; margin: 0 auto;
   box-shadow: 0 1px 0 rgba(255,255,255,.6), 0 6px 18px -8px rgba(20,24,33,.45); }
-.widget canvas:focus-visible { outline: 3px solid #4a90d9; outline-offset: 3px; }
+.widget canvas:focus-visible, .widget input[type=range]:focus-visible, a:focus-visible { outline: 3px solid #4a90d9; outline-offset: 3px; }
 @media (min-width: 720px) {
   .widget.side { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); column-gap: 24px; align-items: start; }
   .widget.side > canvas.board:first-child { grid-row: 1 / span 12; margin: 0; }

@@ -7,7 +7,7 @@ import { targets } from '../src/engine.js';
 export function mount(el) {
   const g = board('hook'), par = BOARDS.hook.par, goal = targets(g);
   let state = startState(g), moves = 0;
-  const view = makeCanvas(g, { label: 'Puzzle: a 6 by 6 board with two light sources, two targets and ten mirrors. Click a mirror to flip it.', onActivate });
+  const view = makeCanvas(g, { label: 'Puzzle: a 6 by 6 board with two light sources, two targets and ten mirrors. Click a mirror to flip it, or use the arrow keys to move between mirrors and Enter to flip.', onActivate });
   const controls = document.createElement('div'); controls.className = 'controls';
   const reset = button('Start over', () => { state = startState(g); moves = 0; view.redraw(); });
   const reveal = button(`Show a ${par}-flip solution`, () => {
