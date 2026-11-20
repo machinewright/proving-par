@@ -35,14 +35,14 @@ export function mount(el) {
     b.setAttribute('aria-pressed', String(k === tool)); return b;
   });
   tools.append(...toolButtons);
-  const presets = document.createElement('div'); presets.className = 'controls';
+  const presets = document.createElement('div'); presets.className = 'controls presets';
   presets.append(
     button('Opening puzzle', () => load(padded(board('hook'), 8))),
     button('The open board', () => load(board('weak'))),
     button('Empty', () => load(emptyBoard())),
   );
   const actions = document.createElement('div'); actions.className = 'controls';
-  const solveB = button('Solve', run);
+  const solveB = button('Solve', run); solveB.classList.add('primary');
   const showB = button('Show solution', () => { if (result?.flips) { shownSolution = result.flips; draw(); } });
   showB.disabled = true;
   actions.append(solveB, showB);
@@ -80,7 +80,7 @@ export function mount(el) {
   function draw() {
     const css = canvas.getBoundingClientRect().width || 300, dpr = devicePixelRatio || 1;
     const w = Math.round(css * dpr);
-    if (canvas.width !== w) { canvas.width = w; canvas.height = Math.round(w * g.h / g.w); }
+    if (canvas.width !== w || canvas.height !== Math.round(w * g.h / g.w)) { canvas.width = w; canvas.height = Math.round(w * g.h / g.w); }
     const d = startState(g);
     if (shownSolution) for (const i of shownSolution) d[i] ^= 1;
     drawBoard(canvas, g, d, { focus: cursor, fadeUnreached: false });

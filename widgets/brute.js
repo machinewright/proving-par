@@ -70,7 +70,7 @@ export function mount(el) {
   view.setDraw(() => drawBoard(view.canvas, g, decided));
   const controls = document.createElement('div');
   controls.className = 'controls';
-  const runBtn = document.createElement('button');
+  const runBtn = document.createElement('button'); runBtn.classList.add('primary');
   runBtn.type = 'button';
   runBtn.textContent = `Check all ${formatBig(total)} ways`;
   controls.append(runBtn);
@@ -84,9 +84,7 @@ export function mount(el) {
   const cells = document.createElement('canvas');
   const dpr = Math.min(devicePixelRatio || 1, 3);
   cells.width = cells.height = SIDE * 10 * dpr;
-  cells.style.display = 'block';
-  cells.style.width = 'min(100%, 160px)';
-  cells.style.height = 'auto';
+  cells.className = 'bf-cells';
   cells.setAttribute('role', 'img');
   cells.setAttribute('aria-label', `One small square per flip set, ${formatBig(total)} in all. Grey means a target stays dark, green means every target is lit.`);
   const cctx = cells.getContext('2d');
@@ -94,17 +92,20 @@ export function mount(el) {
   const gap = Math.max(1, cw * 0.12);
   const clearCells = () => {
     cctx.fillStyle = COLORS.bg; cctx.fillRect(0, 0, cells.width, cells.height);
-    cctx.fillStyle = '#1f2531';
+    cctx.fillStyle = '#20262f';
     for (let m = 0; m < total; m++) cctx.fillRect((m % SIDE) * cw + gap / 2, Math.floor(m / SIDE) * cw + gap / 2, cw - gap, cw - gap);
   };
   const paintCell = (m, works) => {
-    cctx.fillStyle = works ? COLORS.lit : COLORS.undecided;
+    cctx.save();
+    if (works) { cctx.shadowColor = COLORS.lit; cctx.shadowBlur = cw * 0.8; }
+    cctx.fillStyle = works ? COLORS.lit : '#4b5363';
     cctx.fillRect((m % SIDE) * cw + gap / 2, Math.floor(m / SIDE) * cw + gap / 2, cw - gap, cw - gap);
+    cctx.restore();
   };
   clearCells();
   const cellsNote = document.createElement('div');
   cellsNote.className = 'note';
-  cellsNote.textContent = `One cell per flip set, checked in order. Grey fails, green lights every target.`;
+  cellsNote.textContent = `One cell per flip set, checked in order. Grey: some target stays dark. Green: every target lit.`;
 
   readoutA.replaceChildren(
     txt(`${mirrors.length} mirrors, each kept or flipped: `), num(formatBig(total)), txt(` ways to set the board.`),

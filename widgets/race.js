@@ -26,11 +26,11 @@ export function mount(el, opts = {}) {
   view.setDraw(() => drawBoard(view.canvas, g, state, { fadeUnreached: false }));
   const bars = document.createElement('div');
   bars.innerHTML = `
-    <div class="race-row"><div class="race-label">Without ghost light</div><div class="race-track"><div class="race-bar" style="background:#8b93a1"></div></div><div class="race-n num">0</div></div>
-    <div class="race-row"><div class="race-label">With ghost light</div><div class="race-track"><div class="race-bar" style="background:#ffd166"></div></div><div class="race-n num">0</div></div>`;
+    <div class="race-row"><div class="race-label">Without ghost light</div><div class="race-track"><div class="race-bar" style="background:#7d8594"></div></div><div class="race-n num">0</div></div>
+    <div class="race-row"><div class="race-label">With ghost light</div><div class="race-track"><div class="race-bar" style="background:#e3a21a"></div></div><div class="race-n num">0</div></div>`;
   const [barA, barB] = bars.querySelectorAll('.race-bar'), [nA, nB] = bars.querySelectorAll('.race-n');
   const controls = document.createElement('div'); controls.className = 'controls';
-  const raceB = button('Race', race);
+  const raceB = button('Race', race); raceB.classList.add('primary');
   controls.append(raceB);
   if (showGhostStart) {
     const toggle = button('Show the puzzle', () => {

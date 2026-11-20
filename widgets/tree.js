@@ -35,7 +35,7 @@ export function mount(el, opts = {}) {
   split.append(bview.canvas, tbox);
 
   const controls = document.createElement('div'); controls.className = 'controls';
-  const runB = button('Watch the search', run);
+  const runB = button('Watch the search', run); runB.classList.add('primary');
   const stepB = button('Step', step);
   const allB = button('Show whole tree', () => { stop(); shown = nodes.length; select(nodes[0]); });
   controls.append(runB, stepB, allB);
