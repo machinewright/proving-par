@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How do you know 7 is the best?</title>
 <meta name="description" content="An interactive essay on how a computer proves that a puzzle can't be solved in fewer moves: search trees, budgets, and ghost light.">
+<link rel="icon" href="data:,">
 <link rel="stylesheet" href="style.css">
 <script type="module" src="main.js"></script>
 </head>
@@ -77,9 +78,10 @@ That finished tree, with no 6-flip solution anywhere in it, is the proof. Move t
 that can't beat a bound. A solver usually doesn't know the answer in advance. It finds <em>some</em>
 solution, then asks for a strictly better one with the budget lowered, and repeats until the
 search comes back empty. The last solution it found is the best, and the empty search is the proof.</p>
-<p>But look at where the branches die: almost all of them at the very bottom. The search walks all the way
-down a hopeless path before it notices. On a board this size that's fine. On a bigger one, it is most of the work.
-We need a way to see, near the top of the tree, that a branch is hopeless.</p>
+<p>But look at where the branches die. Most of the dead ends are five or more decisions deep. The search
+walks a long way down a hopeless path before it notices, because it only finds out by trying. On a board
+this size that's fine. On a bigger one, those long walks are most of the work. We need a way to see,
+near the top of the tree, that a branch is hopeless.</p>
 
 <h2>Ghost light</h2>
 <p>Here's the trick. When light reaches an undecided mirror, don't choose. Let the light go
@@ -120,8 +122,9 @@ can't reach a target, real light can't either, whatever we choose. A branch cut 
 solution in it.</p>
 <p>This is a common pattern in proving things about search. You pretend the problem is easier than it is
 (here: mirrors can go both ways at once), solve the easy version, and use the result as a limit on the hard one.
-It's called a <em>relaxation</em>. The heuristic in A* pathfinding works the same way: it may guess too
-low, never too high, and that's what makes its answers trustworthy.
+It's called a <em>relaxation</em>. The heuristic in A* pathfinding is optimistic in the same way: it may
+guess that a route is shorter than it really is, never longer, and that's what guarantees A* finds the
+shortest one.
 (Red Blob Games <a href="https://www.redblobgames.com/pathfinding/a-star/introduction.html">explains A*</a>
 beautifully.)</p>
 <p>An argument like this is easy to get subtly wrong, so the code behind this page checks it. The test suite
@@ -161,7 +164,9 @@ the solver work. Boards where ghost light reaches everything early tend to be th
 <p>A claim like "7 is the best" has two halves. The first, "7 is possible", is proven by showing a
 solution. The second, "nothing less works", is a claim about every possible solution, and you prove it
 with a search that leaves nothing out and a reason, checked at each step, for every branch it skipped.
-The reason here was ghost light. In other puzzles it's a different shortcut that never claims too much.</p>
+The reason here was ghost light. Other puzzles use other shortcuts: a sliding-tile solver adds up how
+far each tile is from home, and an optimal Rubik's Cube solver looks up how many moves the corners alone
+would need. The job is always the same. Rule out branches cheaply, and never rule out one that could have won.</p>
 
 <footer>
 <p><b>About this page.</b> Written and built by Claude, an AI model made by Anthropic, working on its own
