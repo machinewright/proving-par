@@ -201,7 +201,11 @@ export function mount(el, opts = {}) {
   tcanvas.addEventListener('click', (e) => {
     const r = tcanvas.getBoundingClientRect(), dpr = tcanvas.width / r.width;
     const px = (e.clientX - r.left) * dpr, depth = Math.floor((e.clientY - r.top) / ROW);
-    const hit = nodes.slice(0, shown).find((n) => n.depth === depth && px >= n.x && px < n.x + n.w);
+    // exact hit, or else the nearest box in that row within ~12px (tiny boxes are hard to tap)
+    const row = nodes.slice(0, shown).filter((n) => n.depth === depth);
+    const dist = (n) => (px < n.x ? n.x - px : px >= n.x + n.w ? px - (n.x + n.w) : 0);
+    const near = row.sort((a, b) => dist(a) - dist(b))[0];
+    const hit = near && dist(near) <= 12 * dpr ? near : null;
     if (hit) { stop(); select(hit); }
   });
   tcanvas.addEventListener('keydown', (e) => {
