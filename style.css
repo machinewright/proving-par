@@ -72,3 +72,4 @@ noscript p { background: #fff1d6; padding: 10px; }
 .widget canvas.board.big { max-width: 440px; }
 .widget.side > canvas.board.big:first-child { max-width: 340px; }
 @media (max-width: 719px) { .widget { margin-left: -12px; margin-right: -12px; padding: 14px; } main { padding-top: 36px; } h1 { font-size: 2.1em; } }
+.widget[data-widget="sandbox"] canvas.board { margin-left: 0; }
