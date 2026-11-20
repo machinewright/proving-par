@@ -68,7 +68,7 @@ function makeTracer(g) {
 
 // Returns { moves, flips: [idx...] } for an optimal solution, or null if none within `limit`
 // moves or the node budget runs out (then `exhausted` is set).
-export function solve(g, { limit = Infinity, maxNodes = 300000 } = {}) {
+export function solve(g, { limit = Infinity, maxNodes = 300000, ghost = true } = {}) {
   const goal = targets(g);
   const tr = makeTracer(g);
   const rotOf = new Int8Array(tr.n).fill(-1);
@@ -83,7 +83,7 @@ export function solve(g, { limit = Infinity, maxNodes = 300000 } = {}) {
     if (++nodes > maxNodes) { exhausted = true; return; }
     // with no flips left to spend, every undecided piece keeps its current state
     const maxCost = best ? bound - 1 : bound;
-    if (cost < maxCost) { // (at maxCost the frozen trace below is already exact)
+    if (ghost && cost < maxCost) { // (at maxCost the frozen trace below is already exact)
       tr.run(rotOf, false, true);
       if (!goal.every(tr.isLit)) return;
     }

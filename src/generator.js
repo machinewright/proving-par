@@ -248,3 +248,8 @@ export function streak(solvedKeys, date = new Date()) {
 export function dailySeed(date = new Date()) {
   return hashString('beamwright-daily-' + dateKey(date));
 }
+
+// Essay helper: generate with explicit parameters (e.g. mirrors only, one color).
+export function generateWith(seed, params) {
+  return generateOne(rng(seed), { candidates: 1, ...params }, 0, seed);
+}
