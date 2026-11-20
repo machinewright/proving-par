@@ -37,7 +37,7 @@ way of playing, including all the ones nobody tried.</p>
 
 <h2>Just try everything?</h2>
 <p>There are ten mirrors, and each one is either flipped or not. Clicking a mirror twice gets you back where you
-started, so the order of clicks doesn't matter either. All that matters is <em>which set</em> of mirrors ends up
+started, and the order of clicks doesn't matter. All that matters is <em>which set</em> of mirrors ends up
 flipped. Ten mirrors, two choices each: 2<sup>10</sup> = 1,024 sets. A computer can check every one of them.</p>
 
 <div class="widget" data-widget="brute"></div>
@@ -70,7 +70,7 @@ a single path here: the three spare mirrors are never touched by light, so the s
 And the finished tree still proves that nothing better exists, because every way the light could go was followed.</p>
 
 <h2>A budget</h2>
-<p>We don't actually need the full tree to answer our question. We only need to answer one
+<p>To prove that 7 is the best, we don't need every solution. We only need the answer to one
 yes-or-no question: <em>is there a solution with at most 6 flips?</em></p>
 <p>Give the search a budget of 6. Every flip spends one. Once the budget is gone, the remaining mirrors have to
 stay as they are, so the light goes wherever it goes and either lights every target or doesn't. No more
