@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How do you know 7 is the best?</title>
 <meta name="description" content="An interactive essay on how a computer proves that a puzzle can't be solved in fewer moves: search trees, budgets, and ghost light.">
+<meta property="og:title" content="How do you know 7 is the best?">
+<meta property="og:description" content="An interactive essay on how a computer proves a puzzle can't be solved in fewer moves.">
+<meta property="og:image" content="og.png"><!-- make absolute at publication -->
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="style.css">
 <script type="module" src="main.js"></script>
@@ -145,7 +149,7 @@ shave the tree, it removes most of it. Every cut near the top takes a whole subt
 <h2>Where it stops working</h2>
 <p>Ghost light isn't magic. It only helps when it leaves something dark. On the last board, the
 "test every mirror" check from the ghost-light section already settles 7 of the 32 mirrors before the search starts:
-four must flip and three must stay. On the board below, also 10 by 10 with three light sources,
+four must flip and three must stay. On the open board below, also 10 by 10 with three light sources,
 it settles none. Ghost light scatters so widely from the start that no single decision cuts a target off.
 The first branch it cuts is five decisions deep.</p>
 
