@@ -85,7 +85,7 @@ export function mount(el, opts = {}) {
       view.redraw();
     };
     if (reduce) { for (;;) { tick(); if (testing === -1) return; } }
-    timer = setInterval(tick, 900); tick();
+    timer = setInterval(tick, 650); tick();
   }
   function stop() {
     if (timer) clearInterval(timer);

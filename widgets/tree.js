@@ -27,7 +27,7 @@ export function mount(el, opts = {}) {
   const bview = makeCanvas(g, { label: 'The board at the selected point in the search.' });
   const tcanvas = document.createElement('canvas');
   tcanvas.className = 'board'; tcanvas.tabIndex = 0; tcanvas.style.cursor = 'pointer';
-  tcanvas.setAttribute('role', 'img');
+  tcanvas.setAttribute('role', 'application'); tcanvas.setAttribute('aria-roledescription', 'search tree');
   tcanvas.setAttribute('aria-label', 'Search tree. Use the arrow keys to move between positions; the board and the text below follow.');
   const tbox = document.createElement('div'); tbox.append(tcanvas);
   const legend = document.createElement('div'); legend.className = 'legend';
