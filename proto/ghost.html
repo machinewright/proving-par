@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prototype: ghost beams</title>
+<style>
+  body { font: 18px/1.55 system-ui, sans-serif; color: #1d2330; background: #fbfaf7; max-width: 680px; margin: 40px auto; padding: 0 16px; }
+  .widget { background: #12161f; border-radius: 12px; padding: 14px; color: #d8dee9; }
+  canvas { width: 100%; aspect-ratio: 1; display: block; touch-action: manipulation; cursor: pointer; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+  button { font: inherit; font-size: 15px; background: #222a38; color: #d8dee9; border: 1px solid #3a4558; border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+  #status { margin: 10px 2px 0; min-height: 3em; font-size: 16px; }
+  .dead { color: #ff8a80; } .alive { color: #7ef0a8; }
+  .legend { font-size: 14px; color: #8b93a1; }
+</style>
+</head>
+<body>
+<p>Click a mirror to cycle it: <b>undecided</b> (✕, light goes both ways) → <b>kept</b> as it is → <b>flipped</b>.
+Solid beams are certain; faint beams are only possible.</p>
+<div class="widget">
+  <canvas id="c" width="600" height="600" aria-label="Puzzle board"></canvas>
+  <div class="row">
+    <button id="all-undecided">Everything undecided</button>
+    <button id="all-kept">Keep everything</button>
+    <span class="legend" id="count"></span>
+  </div>
+  <p id="status" role="status" aria-live="polite"></p>
+</div>
+<script type="module">
+import { generate } from '../src/generator.js';
+import { MIRROR, SPLITTER, TARGET, WALL, EMITTER, DX, DY, targets } from '../src/engine.js';
+import { traceGhost, UNDECIDED } from '../src/ghost.js';
+
+const { puzzle: g } = generate(147, 4); // the essay's hook puzzle: 6x6, 10 mirrors, par 7
+const canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
+const isRot = (c) => (c.type === MIRROR || c.type === SPLITTER) && !c.fixed;
+const decided = new Int8Array(g.cells.length).fill(UNDECIDED);
+const goal = targets(g);
+
+function fit() {
+  const dpr = devicePixelRatio || 1, css = canvas.getBoundingClientRect().width;
+  canvas.width = canvas.height = Math.round(css * dpr); draw();
+}
+
+function draw() {
+  const W = canvas.width, cell = W / g.w, cx = (x) => (x + 0.5) * cell, cy = (y) => (y + 0.5) * cell;
+  const t = traceGhost(g, decided);
+  ctx.clearRect(0, 0, W, W);
+  ctx.strokeStyle = '#232a36'; ctx.lineWidth = 1;
+  for (let i = 1; i < g.w; i++) {
+    ctx.beginPath(); ctx.moveTo(i * cell, 0); ctx.lineTo(i * cell, W); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i * cell); ctx.lineTo(W, i * cell); ctx.stroke();
+  }
+  ctx.lineCap = 'round';
+  // ghost beams first (thin, dashed), then real beams with a glow on top
+  for (const s of t.segments.filter((s) => s.ghost)) {
+    ctx.strokeStyle = 'rgba(255,209,102,0.45)'; ctx.lineWidth = cell * 0.035; ctx.setLineDash([cell * 0.08, cell * 0.08]);
+    ctx.beginPath(); ctx.moveTo(cx(s.x1), cy(s.y1)); ctx.lineTo(cx(s.x2), cy(s.y2)); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  for (const [w, a] of [[cell * 0.24, 0.12], [cell * 0.12, 0.25], [cell * 0.05, 1]]) {
+    ctx.globalAlpha = a; ctx.lineWidth = w; ctx.strokeStyle = '#ffd166';
+    for (const s of t.segments.filter((s) => !s.ghost)) {
+      ctx.beginPath(); ctx.moveTo(cx(s.x1), cy(s.y1)); ctx.lineTo(cx(s.x2), cy(s.y2)); ctx.stroke();
+    }
+  }
+  ctx.globalAlpha = 1;
+  g.cells.forEach((c, i) => {
+    const x = i % g.w, y = Math.floor(i / g.w), px = cx(x), py = cy(y), r = cell * 0.34;
+    if (c.type === WALL) { ctx.fillStyle = '#3a4252'; ctx.fillRect(x * cell + 3, y * cell + 3, cell - 6, cell - 6); }
+    else if (c.type === EMITTER) {
+      const d = c.dir; ctx.fillStyle = '#ffd166'; ctx.beginPath();
+      ctx.moveTo(px + DX[d] * r, py + DY[d] * r);
+      ctx.lineTo(px + DX[(d + 1) % 4] * r * 0.8 - DX[d] * r * 0.6, py + DY[(d + 1) % 4] * r * 0.8 - DY[d] * r * 0.6);
+      ctx.lineTo(px + DX[(d + 3) % 4] * r * 0.8 - DX[d] * r * 0.6, py + DY[(d + 3) % 4] * r * 0.8 - DY[d] * r * 0.6);
+      ctx.closePath(); ctx.fill();
+    } else if (c.type === TARGET) {
+      const real = t.litReal.has(i), maybe = t.lit.has(i);
+      ctx.lineWidth = cell * 0.08;
+      ctx.strokeStyle = real ? '#7ef0a8' : maybe ? '#ffd166' : '#ff8a80';
+      ctx.setLineDash(real ? [] : [cell * 0.09, cell * 0.07]);
+      ctx.beginPath(); ctx.arc(px, py, r * 0.7, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+      if (real) { ctx.fillStyle = '#7ef0a8'; ctx.beginPath(); ctx.arc(px, py, r * 0.3, 0, 7); ctx.fill(); }
+      if (!maybe) { // can't be lit by any completion: cross it out
+        ctx.strokeStyle = '#ff8a80'; ctx.lineWidth = cell * 0.05; ctx.beginPath();
+        ctx.moveTo(px - r * 0.45, py - r * 0.45); ctx.lineTo(px + r * 0.45, py + r * 0.45); ctx.stroke();
+      }
+    } else if (isRot(c)) {
+      const d = decided[i];
+      const line = (rot, alpha, width) => {
+        const s = rot === 0 ? -1 : 1; ctx.globalAlpha = alpha; ctx.lineWidth = width;
+        ctx.beginPath(); ctx.moveTo(px - r, py - s * r); ctx.lineTo(px + r, py + s * r); ctx.stroke(); ctx.globalAlpha = 1;
+      };
+      const far = !t.reached.has(i) ? 0.25 : 1; // no light can reach it: it can't matter (yet)
+      if (d === UNDECIDED) { ctx.strokeStyle = '#8b93a1'; line(0, 0.55 * far, cell * 0.05); line(1, 0.55 * far, cell * 0.05); }
+      else {
+        ctx.strokeStyle = d === c.rot ? '#d8dee9' : '#9ad1ff'; line(d, 1, cell * 0.09);
+        if (d !== c.rot) { ctx.fillStyle = '#9ad1ff'; ctx.beginPath(); ctx.arc(x * cell + cell * 0.82, y * cell + cell * 0.18, cell * 0.06, 0, 7); ctx.fill(); }
+      }
+    }
+  });
+  const flips = g.cells.reduce((n, c, i) => n + (isRot(c) && decided[i] !== UNDECIDED && decided[i] !== c.rot ? 1 : 0), 0);
+  const open = g.cells.reduce((n, c, i) => n + (isRot(c) && decided[i] === UNDECIDED ? 1 : 0), 0);
+  document.getElementById('count').textContent = `${flips} flipped · ${open} undecided`;
+  const dark = goal.filter((i) => !t.lit.has(i));
+  const st = document.getElementById('status');
+  if (dark.length) {
+    st.className = 'dead';
+    st.textContent = `Dead end. Even with every undecided mirror sending light both ways, ${dark.length === 1 ? 'a target stays' : dark.length + ' targets stay'} dark. No way of finishing these choices can work, so the search can skip all ${2 ** open} of them.`;
+  } else if (goal.every((i) => t.litReal.has(i))) {
+    st.className = 'alive'; st.textContent = `Solved, with ${flips} flip${flips === 1 ? '' : 's'}.`;
+  } else {
+    st.className = ''; st.textContent = 'Still possible: every target can be reached by some ghost beam. The search has to keep looking here.';
+  }
+}
+
+canvas.addEventListener('click', (e) => {
+  const r = canvas.getBoundingClientRect();
+  const x = Math.floor((e.clientX - r.left) / r.width * g.w), y = Math.floor((e.clientY - r.top) / r.height * g.h);
+  const i = y * g.w + x, c = g.cells[i];
+  if (!c || !isRot(c)) return;
+  decided[i] = decided[i] === UNDECIDED ? c.rot : decided[i] === c.rot ? c.rot ^ 1 : UNDECIDED;
+  draw();
+});
+document.getElementById('all-undecided').onclick = () => { g.cells.forEach((c, i) => { if (isRot(c)) decided[i] = UNDECIDED; }); draw(); };
+document.getElementById('all-kept').onclick = () => { g.cells.forEach((c, i) => { if (isRot(c)) decided[i] = c.rot; }); draw(); };
+addEventListener('resize', fit); fit();
+</script>
+</body>
+</html>
