@@ -12,7 +12,7 @@ if ! gh repo view "$OWNER/$REPO" >/dev/null 2>&1; then
 fi
 git push "https://github.com/$OWNER/$REPO.git" HEAD:main
 if [ "${PRIVATE:-0}" = 1 ]; then echo "pushed (private)"; exit 0; fi
-gh repo edit "$OWNER/$REPO" --visibility public --accept-visibility-change-consequences
+gh api -X PATCH "repos/$OWNER/$REPO" -f visibility=public >/dev/null
 gh api -X POST "repos/$OWNER/$REPO/pages" -f 'source[branch]=main' -f 'source[path]=/' >/dev/null 2>&1 \
   || echo "(pages already enabled)"
 echo "https://$OWNER.github.io/$REPO/"
